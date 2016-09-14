@@ -157,8 +157,6 @@ namespace AndroidPlusPlus.VsDebugEngine
         throw new InvalidOperationException ("Could not evaluate a target CPU ABI.");
       }
 
-      bool preferedGdbAbiIs64Bit = preferedGdbAbiToolPrefix.Contains ("64");
-
       Engine.Broadcast (new DebugEngineEvent.DebuggerConnectionEvent (DebugEngineEvent.DebuggerConnectionEvent.EventType.LogStatus, string.Format ("Configuring GDB for '{0}' target...", preferedGdbAbiToolPrefix)), null, null);
 
       // 
@@ -173,15 +171,15 @@ namespace AndroidPlusPlus.VsDebugEngine
 
       List<string> gdbToolPermutations = new List<string> ();
 
-      string [] availableHostArchitectures = new string [] { "x86", "x86_64" };
+      string [] availableHostArchitectures = new string [] { "x86_64" };
+
+      if (!Environment.Is64BitOperatingSystem)
+      {
+        throw new InvalidOperationException ("Android++ only supports 64-bit distributions of GDB.  Please file a feature request.");
+      }
 
       foreach (string arch in availableHostArchitectures)
       {
-        if (arch.Contains ("64") && !Environment.Is64BitOperatingSystem)
-        {
-          continue;
-        }
-
         string gdbToolFilePattern = string.Format ("{0}-gdb.cmd", preferedGdbAbiToolPrefix);
 
         string [] availableVersionPaths = Directory.GetDirectories (Path.Combine (androidPlusPlusRoot, "contrib", "gdb", "bin", arch), "*.*.*", SearchOption.TopDirectoryOnly);
